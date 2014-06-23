@@ -1,0 +1,32 @@
+#!/usr/bin/python
+"""
+Sync times from a local hamster to remote trac project.
+
+@user: Alex Hayes <alex.hayes@roi.com.au>
+"""
+import os, argparse
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+from hamstertracsyncr import sync
+
+yesterday = date.today() - relativedelta(days=1)
+
+parser = argparse.ArgumentParser(description="Sync activity from a local hamster installation to remote trac project.\n" \
+                                 "Once an activity has been syncd to trac it is tagged with #trac-syncd and if syncing fails " \
+                                 "or a ticket id is not present in the activity (must be in #n format - where n is the ticket id) " \
+                                 "the activity is tagged with #trac-ignore")
+parser.add_argument('trac_url', action="store", help='The url to your trac project.')
+parser.add_argument('user', action="store", help='Trac username')
+parser.add_argument('password', action="store", help='Trac password')
+parser.add_argument('--end', dest="end", action="store", default=yesterday.strftime('%Y-%m-%d'), help='Fetch time entries up to this date - defaults to yesterday.', metavar='YYYY-MM-DD')
+parser.add_argument('--verbose', dest="verbose", action="store_true", default=False)
+
+args = parser.parse_args()
+
+start = datetime(1975, 1, 1) # Should be good - don't think people cared about timesheets before 1975...
+end   = datetime.strptime('%s 23:59:59' % args.end, "%Y-%m-%d %H:%M:%S")
+
+if args.verbose:
+    print "Fetching hamster activity between '%s' & '%s'" % (start, end)
+
+sync(start, end, args.trac_url, args.user, args.password, args.verbose)

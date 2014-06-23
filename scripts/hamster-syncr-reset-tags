@@ -1,0 +1,22 @@
+#!/usr/bin/python
+import argparse
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+from hamstertracsyncr import reset
+
+yesterday = date.today() - relativedelta(days=1)
+
+parser = argparse.ArgumentParser(description="Remove all trac-* tags from hamster facts - note that this does not remove the time entry from trac!!!")
+parser.add_argument('--start', dest="start", action="store", default=datetime(1975, 1, 1).strftime('%Y-%m-%d'))
+parser.add_argument('--end', dest="end", action="store", default=yesterday.strftime('%Y-%m-%d'))
+parser.add_argument('--verbose', dest="verbose", action="store_true", default=False)
+
+args = parser.parse_args()
+
+start = datetime.strptime('%s 00:00:00' % args.start, "%Y-%m-%d %H:%M:%S")
+end   = datetime.strptime('%s 23:59:59' % args.end, "%Y-%m-%d %H:%M:%S")
+
+if args.verbose:
+    print "Fetching hamster activity between '%s' & '%s'" % (start, end)
+
+reset(start, end, args.verbose)
